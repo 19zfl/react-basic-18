@@ -1,0 +1,37 @@
+{
+    "list" : [
+        {
+          "rpid": 3,
+          "user": {
+            "uid": "210123",
+            "avatar": "../logo512.png",
+            "uname": "张三"
+          },
+          "content": "哎哟不错。",
+          "ctime": "10-18 08:15",
+          "like": 66
+        },
+        {
+          "rpid": 2,
+          "user": {
+            "uid": "210122",
+            "avatar": "../logo512.png",
+            "uname": "王五"
+          },
+          "content": "我喜欢",
+          "ctime": "10-18 07:33",
+          "like": 88
+        },
+        {
+          "rpid": 1,
+          "user": {
+            "uid": "210121",
+            "avatar": "../logo512.png",
+            "uname": "赵六"
+          },
+          "content": "很可以啊！",
+          "ctime": "10-18 07:15",
+          "like": 99
+        }
+    ]
+}
