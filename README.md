@@ -1001,6 +1001,292 @@ function CommentItem({ item, onHandleDelete }) {
 
 ## 9. Redux
 
+Redux是React最常用的集中状态管理工具，类似于Vue中的Pinia（Vuex），可以独立于框架运行。
+
+作用：通过集中管理的方式管理应用的状态。
+
+![image-20250223134502557](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223134502636.png)
+
+### 9.1 Redux快速体验
+
+不和任何框架绑定，不使用任何构建工具，使用纯Redux实现计数器。
+
+![image-20250223134723952](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223134724003.png)
+
+思路：
+
+1. 定义一个reducer函数（根据当前想要做的修改返回一个新的状态）；
+2. 使用createStore方法传入reducer函数生成一个store实例对象；
+3. 使用store实例的subscribe方法订阅数据的变化（数据一旦变化，可以得到通知）；
+4. 使用store实例的dispatch方法提交action对象触发数据变化（告诉reducer怎么修改数据）；
+5. 使用store实例的getState方法获取最新的状态数据更新到视图中。
+
+```html
+<button id="decrement">-</button>
+<span id="count">0</span>
+<button id="increment">+</button>
+<script>
+    // 1.定义reducer函数
+    // 作用：根据不同的action对象，返回不同的新的state
+    // state：管理的数据初始状态
+    // action：对象type标记当前想要执行的操作
+    function reducer(state = {count:0}, action) {
+        if (action.type === 'INCREMENT') {
+            return { count:state.count + 1 }
+        }
+        if (action.type === 'DECREMENT') {
+            return { count:state.count - 1 }
+        }
+        return state
+    }
+    // 2.使用reducer函数生成store实例
+    const store = Redux.createStore(reducer)
+    // 3.通过store实例的subscribe订阅数据变化 
+    // 回调函数在每次state发生变化的时候自动执行
+    store.subscribe(() => {
+    // 5.通过store实例的getState方法获取最新状态更新到视图中
+        document.getElementById('count').innerText=store.getState().count
+    })
+    // 4.通过store实例的dispatch函数提交action更改状态
+    const inBtn = document.getElementById('increment')
+    inBtn.addEventListener('click', () => {
+        store.dispatch({
+            type:'INCREMENT'
+        })
+    })
+    const deBtn = document.getElementById('decrement')
+    deBtn.addEventListener('click', () => {
+        store.dispatch({
+            type:'DECREMENT'
+        })
+    })
+</script>
+```
+
+### 9.2 Redux管理数据流程梳理
+
+![image-20250223143058959](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223143059025.png)
+
+为了职责清晰，数据流向明确，Redux把整个数据修改的流程分为了三个核心概念，分别是：state、action和reducer。
+
+1. state：一个对象，存放管理的数据状态；
+2. action：一个对象，描述怎么修改数据；
+3. reducer：一个函数，根据action的描述生成一个新的state。
+
+### 9.3 Redux与React
+
+#### 9.3.1 配套工具
+
+在React中使用Redux，要求安装两个插件：Redux Toolkit 和 react-redux。
+
+1. Redux Toolkit（RTK）- 官方推荐编写Redux逻辑的方式，是一套工具的集合集，简化书写方式；
+
+![image-20250223143732254](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223143732313.png)
+
+2. react-redux - 用来链接Redux和React组组件的中间件。
+
+![image-20250223143806205](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223143806271.png)
+
+#### 9.3.2 store目录结构设计
+
+![image-20250223144434749](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223144434803.png)
+
+1. 通常集中状态管理的部分都会单独创建一个store目录；
+2. 应用通常会有很多个子store模块，所以创建一个modules目录，在内部编写业务分类的子store；
+3. store中的入口文件index.js的作用是组合modules中所有的子模块，并导出store。
+
+#### 9.3.3 整体路径熟悉
+
+![image-20250223144949962](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223144950050.png)
+
+#### 9.3.5 使用React Toolkit创建counterStore
+
+![image-20250223145343908](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223145344031.png)
+
+#### 9.3.6 为React注入store
+
+react-redux负责把Redux和React链接起来，内置Provider组件通过store参数把创建好的store实例注入到应用中，链接正式建立。
+
+![image-20250223170323295](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223170323389.png)
+
+#### 9.3.8 React组件使用store中的数据
+
+在React组件中使用store中的数据，需要用到一个钩子函数 - useSelector，它的作用是把store中的数据映射到组件中，使用样例如下：
+
+![image-20250223170608942](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223170609026.png)
+
+#### 9.3.9 React组件修改store中的数据
+
+React组件中修改store中的数据需要借助另外一个Hook函数 - useDispatch，它的作用是生成提交action对象的dispatch函数，使用样例如下：
+
+```jsx
+import { useDispatch, useSelector } from "react-redux"
+import { increment, decrement } from "./store/modules/counterStore"
+
+function App() {
+    
+    const { count } = useSelector(state => state.counter)
+    const dispatch = useDispatch()
+    return (
+        <div>
+            <h1>This is App Component.</h1>
+            <button onClick={() => dispatch(decrement())}>-</button>
+            <span style={{fontSize:30}}>{count}</span>
+            <button onClick={() => dispatch(increment())}>+</button>
+        </div>
+    )
+}
+```
+
+### 9.5 Redux与React - 提交action传参
+
+需求说明：
+
+![image-20250223172451628](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223172451691.png)
+
+组件中有两个按钮，可以直接把count修改到某一指定的值，目标count值是在组件中传递过去的，需要在提交action的时候传递参数。
+
+#### 9.5.1 提交action传参实现需求
+
+在reducers的<mark>同步修改方法</mark>中添加action对象参数，在调用actionCreator的时候传递参数，参数会被传递到action对象payload属性上。
+
+```counterStore.js
+	// 修改状态的方法 同步修改方法
+    reducers: {
+        increment(state) {
+            state.count ++
+        },
+        decrement(state) {
+            state.count --
+        },
+        addToNum(state, action) {
+            state.count += action.payload
+        },
+        cutToNum(state, action) {
+            state.count -= action.payload
+        }
+    } 
+```
+
+```App.js
+import { useDispatch, useSelector } from "react-redux"
+import { increment, decrement, addToNum, cutToNum } from "./store/modules/counterStore"
+
+function App() {
+    
+    const { count } = useSelector(state => state.counter)
+    const dispatch = useDispatch()
+    return (
+        <div>
+            <h1>This is App Component.</h1>
+            <button onClick={() => dispatch(cutToNum(20))}>-20</button>
+            <button onClick={() => dispatch(decrement())}>-</button>
+            <span style={{fontSize:30}}>{count}</span>
+            <button onClick={() => dispatch(increment())}>+</button>
+            <button onClick={() => dispatch(addToNum(20))}>+20</button>
+        </div>
+    )
+}
+```
+
+### 9.6 Redux与React - 异步状态操作
+
+需求理解：
+
+![image-20250223173629167](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223173629275.png)
+
+异步操作思路：
+
+1. 创建store的写法保持不变，配置好同步修改状态方法；
+2. 单独封装一个函数，在函数内部return一个新函数，在新函数中：
+   1. 封装异步请求获取数据；
+   2. 调用同步actionCreater传入异步数据生成一个action对象，并使用dispatch提交；
+3. 组件中dispatch的写法保持不变。
+
+```App.js
+import { useDispatch, useSelector } from "react-redux"
+import { useEffect } from "react"
+import { requestAjax } from "./store/modules/channelStore"
+
+function App() {
+    // 拿到store中的channels数据
+    const {channelList} = useSelector(state => state.channel)
+    const dispatch = useDispatch()
+    // 执行请求获取数据
+    useEffect(() => {
+        dispatch(requestAjax())
+    }, [dispatch])
+    return (
+        <div>
+            <h1>This is App Component.</h1>
+            <ul>
+                {channelList.map(item => <li key={item.id}>{item.name}</li>)}
+            </ul>
+        </div>
+    )
+}
+```
+
+```channelStore.js
+import axios from "axios";
+
+import { createSlice } from "@reduxjs/toolkit";
+
+const channelStore = createSlice({
+    name: 'channelStore',
+    initialState: {
+        channelList:[]
+    },
+    reducers: {
+        setChannels(state, action) {
+            state.channelList = action.payload
+        }
+    }
+})
+
+const requestAjax = () => {
+    return async (dispatch) => {
+        const res = await axios.get('http://geek.itheima.net/v1_0/channels')
+        dispatch(setChannels(res.data.data.channels))
+    }
+}
+
+const { setChannels } = channelStore.actions
+
+const channelReducer = channelStore.reducer
+
+export { requestAjax }
+
+export default channelReducer
+```
+
+
+
+```./store/index.js
+const store = configureStore({
+    reducer: {
+        counter: countReducer,
+        channel: channelReducer // 新增
+    }
+})
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

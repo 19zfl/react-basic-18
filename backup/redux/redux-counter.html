@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>计数器</title>
+    <script src="https://unpkg.com/redux@4.2.0/dist/redux.min.js"></script>
+</head>
+<body>
+<button id="decrement">-</button>
+<span id="count">0</span>
+<button id="increment">+</button>
+<script>
+    // 1.定义reducer函数
+    // 作用：根据不同的action对象，返回不同的新的state
+    // state：管理的数据初始状态
+    // action：对象type标记当前想要执行的操作
+    function reducer(state = {count:0}, action) {
+        if (action.type === 'INCREMENT') {
+            return { count:state.count + 1 }
+        }
+        if (action.type === 'DECREMENT') {
+            return { count:state.count - 1 }
+        }
+        return state
+    }
+    // 2.使用reducer函数生成store实例
+    const store = Redux.createStore(reducer)
+    // 3.通过store实例的subscribe订阅数据变化 
+    // 回调函数在每次state发生变化的时候自动执行
+    store.subscribe(() => {
+    // 5.通过store实例的getState方法获取最新状态更新到视图中
+        document.getElementById('count').innerText=store.getState().count
+    })
+    // 4.通过store实例的dispatch函数提交action更改状态
+    const inBtn = document.getElementById('increment')
+    inBtn.addEventListener('click', () => {
+        store.dispatch({
+            type:'INCREMENT'
+        })
+    })
+    const deBtn = document.getElementById('decrement')
+    deBtn.addEventListener('click', () => {
+        store.dispatch({
+            type:'DECREMENT'
+        })
+    })
+</script>
+</body>
+</html>
