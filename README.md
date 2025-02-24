@@ -1079,6 +1079,10 @@ Redux是React最常用的集中状态管理工具，类似于Vue中的Pinia（Vu
 
 在React中使用Redux，要求安装两个插件：Redux Toolkit 和 react-redux。
 
+```cmd
+npm install @reduxjs/toolkit react-redux
+```
+
 1. Redux Toolkit（RTK）- 官方推荐编写Redux逻辑的方式，是一套工具的集合集，简化书写方式；
 
 ![image-20250223143732254](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223143732313.png)
@@ -1150,8 +1154,9 @@ function App() {
 
 在reducers的<mark>同步修改方法</mark>中添加action对象参数，在调用actionCreator的时候传递参数，参数会被传递到action对象payload属性上。
 
-```counterStore.js
-	// 修改状态的方法 同步修改方法
+```js
+// counterStore.js
+// 修改状态的方法 同步修改方法
     reducers: {
         increment(state) {
             state.count ++
@@ -1168,7 +1173,8 @@ function App() {
     } 
 ```
 
-```App.js
+```js
+// App.js
 import { useDispatch, useSelector } from "react-redux"
 import { increment, decrement, addToNum, cutToNum } from "./store/modules/counterStore"
 
@@ -1203,7 +1209,8 @@ function App() {
    2. 调用同步actionCreater传入异步数据生成一个action对象，并使用dispatch提交；
 3. 组件中dispatch的写法保持不变。
 
-```App.js
+```js
+// App.js
 import { useDispatch, useSelector } from "react-redux"
 import { useEffect } from "react"
 import { requestAjax } from "./store/modules/channelStore"
@@ -1227,7 +1234,8 @@ function App() {
 }
 ```
 
-```channelStore.js
+```js
+// channelStore.js
 import axios from "axios";
 
 import { createSlice } from "@reduxjs/toolkit";
@@ -1260,9 +1268,8 @@ export { requestAjax }
 export default channelReducer
 ```
 
-
-
-```./store/index.js
+```js
+// ./store/index.js
 const store = configureStore({
     reducer: {
         counter: countReducer,
@@ -1271,11 +1278,458 @@ const store = configureStore({
 })
 ```
 
+### 9.8 Redux调试 - devtools
+
+Chrome安装扩展：Redux DevTools
+
+![image-20250223225246586](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250223225246737.png)
 
 
 
+## 10. ReactRouter
 
+什么是前端路由：
 
+一个路径path对应一个组件component当我们在浏览器中访问一个path的时候，path对应的组件会在页面中进行渲染。
+
+```js
+const routes = [
+    {
+        path: '/about',
+        component: About
+    },
+    {
+        path: '/article',
+        component: Article
+    }
+]
+```
+
+创建路由开发环境：采用CRA创建项目的方式进行基础环境配置。
+
+1. 创建项目并安装所有依赖：
+
+   ```cmd
+   npx create-react-app react-router-pro
+   
+   npm i
+   ```
+
+2. 安装最新的ReactRouter包：
+
+   ```cmd
+   npm i react-router-dom
+   ```
+
+3. 启动项目：
+
+   ```cmd
+   npm run start
+   ```
+
+### 10.1 快速开始
+
+需求：创建一个可以切换登录页和文章页的路由系统。
+
+![image-20250224151430288](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250224151430355.png)
+
+```js
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
+const route = createBrowserRouter([
+  {
+    path: '/login',
+    element: <div>login</div>
+  },
+  {
+    path: '/article',
+    element: <div>article</div>
+  }
+])
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+root.render(
+  <RouterProvider router={route}>
+    <App />
+  </RouterProvider>
+);
+```
+
+### 10.2 抽离路由模块
+
+实际开发中的router配置
+
+![image-20250224152641727](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250224152641806.png)
+
+```js
+// /page/login/index.js
+const Login = () => {
+    return (
+        <div>我是登录页</div>
+    )
+}
+
+export default Login
+```
+
+```js
+// /page/article/index.js
+const Article = () => {
+    return (
+        <div>我是文章页</div>
+    )
+}
+
+export default Article
+```
+
+```js
+// /router/index.js
+import { createBrowserRouter } from "react-router-dom";
+import Login from "../page/Login";
+import Article from "../page/Article";
+
+const router = createBrowserRouter([
+    {
+        path: '/login',
+        element: <Login />
+    },
+    {
+        path: '/article',
+        element: <Article />
+    }
+])
+
+export default router
+```
+
+```js
+// ../index.js
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import { RouterProvider } from 'react-router-dom';
+import router from './router';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+root.render(
+  <RouterProvider router={router}>
+    <App />
+  </RouterProvider>
+);
+```
+
+### 10.3 路由导航
+
+什么是路由导航：
+
+路由系统中的多个路由之间需要进行路由跳转，并且在跳转的同时有可能需要传递参数进行通信。
+
+![image-20250224153615797](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250224153615853.png)
+
+声明式导航：
+
+声明式导航是指通过在模板中通过`<Link/>`组件描述出要跳转到哪里去，比如后台管理系统的左侧菜单通常使用这种方式进行。
+
+```js
+<Link to="/article">文章</Link>
+```
+
+语法说明：通过组件的to属性指定要跳转到路由path，组件会被渲染为浏览器支持的a链接，如果需要传参直接通过字符串拼接的方式拼接参数即可。
+
+编程式导航
+
+编程式导航是指通过`useNavigate`钩子得到导航方法，然后通过调用方法以命令式的形式进行路由跳转，比如想在登录请求完毕之后跳转就可以选择这种方式，更加灵活。
+
+```js
+const login = () => {
+    const navigate = useNavigate()
+    return (
+    	<div>
+        	woshidengluye
+        	<button onClick={() => navigate('/article')>跳转到文章</button>
+        </div>
+    )
+}
+```
+
+语法说明：通过调用navigate方法传入地址path实现跳转。
+
+### 10.5 导航传参
+
+路由导航传参1：
+
+![image-20250224154748145](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250224154748214.png)
+
+```js
+// /login/index.js
+import { Link, useNavigate } from "react-router-dom"
+
+const Login = () => {
+    const navigate = useNavigate()
+    return (
+        <div>
+            我是登录页
+            <Link to={'/article'}>跳转到文章</Link>
+            <button onClick={() => navigate('/article')}>跳转到文章</button>
+            <button onClick={() => navigate('/article?id=1001&name=jack')}>searchParams传参</button>
+        </div>
+    )
+}
+```
+
+```js
+// /article/index.js
+import { useSearchParams } from "react-router-dom"
+
+const Article = () => {
+    const [params] = useSearchParams()
+    return (
+        <div>我是文章页{params.get('id')}{params.get('name')}</div>
+    )
+}
+```
+
+路由导航传参2：
+
+![image-20250224155557684](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250224155557757.png)
+
+```js
+// /router/index.js
+import { createBrowserRouter } from "react-router-dom";
+import Login from "../page/Login";
+import Article from "../page/Article";
+
+const router = createBrowserRouter([
+    {
+        path: '/login',
+        element: <Login />
+    },
+    {
+        path: '/article/:id',
+        element: <Article />
+    }
+])
+```
+
+```js
+// /login/index.js
+import { useNavigate } from "react-router-dom"
+
+const Login = () => {
+    const navigate = useNavigate()
+    return (
+        <div>
+            我是登录页
+            <button onClick={() => navigate('/article/1001')}>params传参</button>
+        </div>
+    )
+}
+```
+
+```js
+// /article/index.js
+import { useParams } from "react-router-dom"
+
+const Article = () => {
+    const params = useParams()
+    return (
+        <div>我是文章页{params.id}</div>
+    )
+}
+```
+
+### 10.6 嵌套路由
+
+什么是嵌套路由
+
+在一级路由中又内嵌了其他路由，这种关系就叫做嵌套路由，嵌套至一级路由内的路由又称二级路由，例如：
+
+![image-20250224160754389](C:\Users\zengf\AppData\Roaming\Typora\typora-user-images\image-20250224160754389.png)
+
+嵌套路由配置
+
+实现步骤：
+
+1. 使用children属性配置路由嵌套关系
+2. 使用`<Outlet/>`组件配置二级路由渲染位置
+
+![image-20250224191405217](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250224191405333.png)
+
+```js
+const About = () => {
+    return (
+        <div>我是关于页</div>
+    )
+}
+```
+
+```js
+const Board = () => {
+    return (
+        <div>我是面板页</div>
+    )
+}
+```
+
+```js
+import { Link, Outlet } from "react-router-dom"
+
+const Layout = () => {
+    return (
+        <div>
+            我是一级路由Layout
+            <Link to='/about'>关于</Link>
+            <Link to='/board'>面板</Link>
+            {/* 配置二级路由 */}
+            <Outlet />
+        </div>
+    )
+}
+```
+
+```js
+import { createBrowserRouter } from "react-router-dom";
+import Layout from "../page/layout";
+import About from "../page/about";
+import Board from "../page/board";
+
+const router = createBrowserRouter([
+    {
+        path: '/',
+        element: <Layout />,
+        children: [
+            {
+                path: '/about',
+                element: <About />
+            },
+            {
+                path: '/board',
+                element: <Board />
+            }
+        ]
+    }
+])
+```
+
+### 10.8 默认二级路由
+
+场景和配置方式
+
+当访问的是一级路由时，默认的二级路由组件可以得到渲染，只需要在二级路由的位置去掉path，设置index属性为true。
+
+![image-20250224193311547](https://gitee.com/coder_zfl/markdown-image-cloud-drive/raw/master/markdown/20250224193311635.png)
+
+```js
+// /router/index.js
+import { createBrowserRouter } from "react-router-dom";
+import Layout from "../page/layout";
+import About from "../page/about";
+import Board from "../page/board";
+
+const router = createBrowserRouter([
+    {
+        path: '/',
+        element: <Layout />,
+        children: [
+            {
+                path: '/about',
+                element: <About />
+            },
+            {
+                index: 'true',
+                element: <Board />
+            }
+        ]
+    }
+])
+
+export default router
+```
+
+```js
+// /layout/index.js
+import { Link, Outlet } from "react-router-dom"
+
+const Layout = () => {
+    return (
+        <div>
+            我是一级路由Layout
+            <Link to='/about'>关于</Link>
+            <Link to='/'>面板</Link>
+            {/* 配置二级路由 */}
+            <Outlet />
+        </div>
+    )
+}
+```
+
+### 10.9 404路由配置
+
+404路由
+
+场景：当浏览器输入url的路径在整个路由配置中都找不到对应的path，为了用户体验，可以使用404兜底组件进行渲染。
+
+实现步骤：
+
+1. 准备一个NotFound组件；
+2. 在路由表数组的末尾，以*号作为路由path配置路由。
+
+```js
+// 404.js
+const NotFound = () => {
+    return (
+        <div>
+            <h1>404</h1>
+        </div>
+    )
+}
+```
+
+```js
+// /router/index.js
+import { createBrowserRouter } from "react-router-dom";
+import Layout from "../page/layout";
+import About from "../page/about";
+import Board from "../page/board";
+import NotFound from "../404"
+
+const router = createBrowserRouter([
+    {
+        path: '/',
+        element: <Layout />,
+        children: [
+            {
+                path: '/about',
+                element: <About />
+            },
+            {
+                index: 'true',
+                element: <Board />
+            }
+        ]
+    },
+    ...
+    {
+        path:'*',
+        element: <NotFound />
+    }
+])
+```
+
+### 10.10 路由两种模式
+
+各个主流框架的路由常用的路由模式有两种，history模式和hash模式，ReactRouter分别由createBrowerRouter和createHashRouter函数负责创建。
+
+| 路由模式 | url表现     | 底层原理                    | 是否需要后端支持 |
+| -------- | ----------- | --------------------------- | ---------------- |
+| history  | url/login   | history对象 + pushState事件 | 需要             |
+| hash     | url/#/login | 监听hashChange事件          | 不需要           |
 
 
 
