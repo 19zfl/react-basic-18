@@ -1,5 +1,7 @@
 # React18学习笔记
 
+[TOC]
+
 
 
 ## 1. React基础篇
@@ -1730,12 +1732,6 @@ const router = createBrowserRouter([
 | -------- | ----------- | --------------------------- | ---------------- |
 | history  | url/login   | history对象 + pushState事件 | 需要             |
 | hash     | url/#/login | 监听hashChange事件          | 不需要           |
-
-
-
-
-
-
 
 
 
